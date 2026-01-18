@@ -11,7 +11,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     ports:
-      - "8000:8000" # Simple port exposure
+      - "8001:8000" # Simple port exposure
     volumes:
       - ./jobs:/app/jobs
       - ./downloads:/app/downloads

@@ -1,0 +1,40 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Jobs and outputs (don't copy into image, use volumes instead)
+
+downloads/
+output/
+
+# Environment files (will be mounted separately)
+config.env
+
+# Documentation
+*.md
+!README.md
+
+# Logs
+*.log

@@ -10,13 +10,13 @@ Why this file exists:
 
 import os
 import tempfile
-from typing import List, Optional
+from typing import List
 from src.services.kie_client import KieClient
 from src.services.frame_extractor_service import FrameExtractorService
 from src.storage import StorageManager
 from src.config import config
 from src.models import VideoGenerationResponse, JobStatus
-
+from .image_uploader import ImageUploader
 
 class VideoService:
     """Service for generating videos via KIE API"""
@@ -145,10 +145,17 @@ class VideoService:
         aspect_ratio_value = "portrait" if self.aspect_ratio == "9:16" else self.aspect_ratio
 
         # Upload frame to get HTTPS URL (KIE requires HTTPS)
-        from .image_uploader import ImageUploader
+      
         
         uploader = ImageUploader()
-        image_url = await uploader.upload_image(image_path, verbose=verbose)
+        try:
+            print("[video] Uploading reference image for image-to-video...")
+            image_url = await uploader.upload_image(image_path, verbose=verbose)
+        except RuntimeError as e:
+            print(f"[video] ERROR: Failed to upload image for shot {shot_number}: {e}")
+            raise
+            
+        print(f"[video] Uploaded image URL: {image_url}")
         
         if verbose:
             print(f"[video] Uploaded image URL: {image_url}")

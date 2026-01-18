@@ -29,6 +29,8 @@ from src.models import (
     CombineVideosRequest,
     MergeRequest,
     MergeResponse,
+    ImageToVideoRequest,
+    ImageToVideoResponse,
     TaskSubmissionResponse,
     JobStatusResponse,
     JobStatus
@@ -401,6 +403,87 @@ async def create_videos(request: VideoBatchRequest, background_tasks: Background
         status=JobStatus.PENDING,
         message="Video generation started. This takes 2-5 minutes per video.",
         status_url=f"/api/jobs/{request.job_id}"
+    )
+
+
+@app.post("/api/image_to_video", response_model=TaskSubmissionResponse)
+async def image_to_video(request: ImageToVideoRequest, background_tasks: BackgroundTasks):
+    """
+    Test endpoint: Generate video from a single image
+
+    Use this to test the sora-2-image-to-video functionality in isolation.
+
+    Example:
+        POST /api/image_to_video
+        {
+            "image_path": "/path/to/image.png",
+            "prompt": "A cinematic shot with slow camera movement",
+            "duration": 10
+        }
+
+        Returns immediately with job_id to poll for status.
+    """
+    import uuid
+    from datetime import datetime
+
+    # Generate job_id if not provided
+    job_id = request.job_id or f"img2vid_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+
+    # Verify image exists
+    if not os.path.exists(request.image_path):
+        raise HTTPException(status_code=404, detail=f"Image not found: {request.image_path}")
+
+    # Initialize job status
+    jobs[job_id] = {
+        "status": JobStatus.PENDING,
+        "message": "Image-to-video generation queued"
+    }
+    storage.update_job_status(job_id, JobStatus.PENDING)
+
+    # Background task
+    async def image_to_video_task(job_id: str, image_path: str, prompt: str, duration: int):
+        try:
+            jobs[job_id] = {"status": JobStatus.PROCESSING, "message": "Uploading image and generating video..."}
+            storage.update_job_status(job_id, JobStatus.PROCESSING)
+
+            video_service = get_video_service()
+            result = await video_service.generate_video_from_image(
+                job_id=job_id,
+                shot_number=1,
+                prompt=prompt,
+                duration=duration,
+                subject="image_to_video_test",
+                image_path=image_path,
+                verbose=True
+            )
+
+            jobs[job_id] = {
+                "status": JobStatus.COMPLETED,
+                "message": "Video generated successfully",
+                "result": {
+                    "video_path": result.video_path,
+                    "job_id": result.job_id
+                }
+            }
+            storage.update_job_status(job_id, JobStatus.COMPLETED, result={"video_path": result.video_path})
+
+        except Exception as e:
+            import traceback
+            error_detail = f"{str(e)}\n\nTraceback:\n{traceback.format_exc()}"
+            jobs[job_id] = {
+                "status": JobStatus.FAILED,
+                "message": "Image-to-video generation failed",
+                "error": error_detail
+            }
+            storage.update_job_status(job_id, JobStatus.FAILED, error=error_detail)
+
+    background_tasks.add_task(image_to_video_task, job_id, request.image_path, request.prompt, request.duration)
+
+    return TaskSubmissionResponse(
+        job_id=job_id,
+        status=JobStatus.PENDING,
+        message="Image-to-video generation started. This takes 2-5 minutes.",
+        status_url=f"/api/jobs/{job_id}"
     )
 
 

@@ -6,19 +6,23 @@ Uses imgbb free API to upload frames and get HTTPS URLs
 import base64
 import httpx
 from pathlib import Path
+from src.config import config
 
 
 class ImageUploader:
     """Upload images to get public HTTPS URLs"""
-    
-    def __init__(self, api_key: str = "d7a35e259ae5ed102e574996d69a5e42"):
+
+    def __init__(self, api_key: str = None):
         """
         Initialize uploader
-        
+
         Args:
             api_key: ImgBB API key (free tier: 5000 uploads/month)
+                     If not provided, uses IMGBB_API_KEY from config
         """
-        self.api_key = api_key
+        self.api_key = api_key or config.IMGBB_API_KEY
+        if not self.api_key:
+            raise ValueError("IMGBB_API_KEY not set. Add it to config.env")
         self.upload_url = "https://api.imgbb.com/1/upload"
     
     async def upload_image(self, image_path: str, verbose: bool = False) -> str:

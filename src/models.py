@@ -78,6 +78,23 @@ class MergeRequest(BaseModel):
     audio_path: Optional[str] = Field(None, description="Path to voiceover audio file (auto-detected if not provided)")
 
 
+class ImageToVideoRequest(BaseModel):
+    """Request to generate video from an image (for testing image-to-video)"""
+    image_path: str = Field(..., description="Path to the source image file")
+    prompt: str = Field(..., description="Video generation prompt", min_length=10)
+    duration: int = Field(10, description="Duration in seconds", ge=5, le=60)
+    job_id: Optional[str] = Field(None, description="Optional job ID (auto-generated if not provided)")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "image_path": "/path/to/image.png",
+                "prompt": "A cinematic shot of the scene slowly coming to life with gentle camera movement",
+                "duration": 10
+            }
+        }
+
+
 class PipelineRequest(BaseModel):
     """Request to run the full pipeline"""
     article_text: str = Field(..., description="The news article text", min_length=100)
@@ -129,6 +146,14 @@ class MergeResponse(BaseModel):
     job_id: str
     final_video_path: str
     status: JobStatus
+
+
+class ImageToVideoResponse(BaseModel):
+    """Response after generating video from image"""
+    job_id: str
+    video_path: str
+    status: JobStatus
+    image_url: Optional[str] = None  # The uploaded image URL (for debugging)
 
 
 class PipelineResponse(BaseModel):

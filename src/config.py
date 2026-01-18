@@ -26,6 +26,7 @@ class Config(BaseSettings):
     # API Keys
     ANTHROPIC_API_KEY: str = ''
     KIE_API_KEY: str = ''
+    IMGBB_API_KEY: str = ''  # For uploading frames to get HTTPS URLs for image-to-video
 
     # Video Structure
     CLIP_DURATION: int = 10

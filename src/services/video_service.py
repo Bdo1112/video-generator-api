@@ -165,6 +165,8 @@ class VideoService:
             },
         }
 
+        print(f"[video] Payload: {payload}")
+
         if verbose:
             print(f"[video] Creating task with model: {payload}...")
 

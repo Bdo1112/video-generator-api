@@ -50,7 +50,8 @@ echo "📥 Pulling latest code..."
 git pull origin main
 echo "🔄 Restarting Docker containers..."
 docker-compose down
-docker-compose up -d --build
+docker-compose build --no-cache
+docker-compose up -d
 echo "✅ Containers restarted"
 echo ""
 echo "📋 Recent logs:"

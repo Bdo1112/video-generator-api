@@ -28,53 +28,51 @@ class ImageUploader:
     async def upload_image(self, image_path: str, verbose: bool = False) -> str:
         """
         Upload image and get HTTPS URL
-        
+
         Args:
             image_path: Local path to image file
             verbose: Print progress
-            
+
         Returns:
             HTTPS URL to uploaded image
-            
+
         Raises:
             RuntimeError: If upload fails
         """
         if verbose:
             print(f"[upload] Uploading {Path(image_path).name}...")
             print(f"[upload] Target: {self.upload_url}")
-        
+
         try:
             # Read and encode image
             if verbose:
                 print(f"[upload] Reading image file...")
-            
+
             with open(image_path, 'rb') as f:
                 image_bytes = f.read()
                 image_size_kb = len(image_bytes) / 1024
                 if verbose:
                     print(f"[upload] Image size: {image_size_kb:.1f} KB")
-                
+
                 image_data = base64.b64encode(image_bytes).decode('utf-8')
-            
-            # Upload to imgbb
-            payload = {
-                "key": self.api_key,
-                "image": image_data,
-            }
-            
+
+            # Upload to imgbb using multipart form data (like curl --form)
+            # API key goes in URL params, image goes in form data
+            url_with_key = f"{self.upload_url}?key={self.api_key}"
+
             if verbose:
-                print(f"[upload] Sending HTTP POST request...")
-            
+                print(f"[upload] Sending HTTP POST request (multipart form)...")
+
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    self.upload_url,
-                    data=payload,
-                    timeout=30.0
+                    url_with_key,
+                    data={"image": image_data},
+                    timeout=60.0
                 )
-                
+
                 if verbose:
                     print(f"[upload] Response status: {response.status_code}")
-                
+
                 response.raise_for_status()
                 data = response.json()
                 

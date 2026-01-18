@@ -12,8 +12,11 @@ if [[ -d "/root/02_apis" ]] || [[ "$(hostname)" == *"srv"* ]]; then
     echo "🔄 Stopping Docker containers..."
     docker-compose down
     echo ""
-    echo "🔨 Building and starting containers..."
-    docker-compose up -d --build
+    echo "🔨 Building containers (no cache)..."
+    docker-compose build --no-cache
+    echo ""
+    echo "🚀 Starting containers..."
+    docker-compose up -d
     echo ""
     echo "✅ Containers restarted"
     echo ""

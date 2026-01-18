@@ -148,6 +148,8 @@ class KieClient:
                 if state == "fail":
                     fail_code = self._safe_get(detail, "data.failCode")
                     fail_msg = self._safe_get(detail, "data.failMsg")
+                    print(f"[poll] TASK FAILED - Full response:")
+                    print(f"[poll] {json.dumps(detail, indent=2)}")
                     raise RuntimeError(f"Task failed: code={fail_code}, msg={fail_msg}")
 
                 elapsed = time.time() - start_time

@@ -164,7 +164,7 @@ class VideoService:
         payload = {
             "model": "sora-2-image-to-video",
             "input": {
-                "image_url": image_url,  # ✅ Changed from "image" to "image_url"
+                "image_urls": [image_url],  # ✅ Changed from "image" to "image_url"
                 "prompt": prompt,
                 "aspect_ratio": aspect_ratio_value,
                 "n_frames": str(duration),

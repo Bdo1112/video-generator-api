@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   video-generator:
@@ -10,25 +10,15 @@ services:
       - .env.production
     environment:
       - PYTHONUNBUFFERED=1
-
-    # Removed: using Traefik instead of direct port exposure
-    # ports:
-    #   - "8001:8000"
-
+    ports:
+      - "8001:8000" # Simple port exposure
     volumes:
       - ./jobs:/app/jobs
       - ./downloads:/app/downloads
       - ./output:/app/output
-
     networks:
-      - n8n_default
-
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.video.rule=Host(`video.fgql.org`)"
-      - "traefik.http.routers.video.entrypoints=web"
-      - "traefik.http.services.video.loadbalancer.server.port=8000"
+      - video-net
 
 networks:
-  n8n_default:
-    external: true
+  video-net:
+    driver: bridge
